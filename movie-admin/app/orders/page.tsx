@@ -1,49 +1,32 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
+import OrderModel from "./OrderModel";
 
-export default function OrdersPage() {
+export default function OrderPage() {
   const [orders, setOrders] = useState([
-    {
-      id: 101,
-      customer: "Nguyen Van A",
-      movie: "Interstellar",
-      cinema: "CGV Vincom Bà Triệu",
-      seat: "E10, E11",
-      total: 220000,
-      status: "Confirmed",
-      date: "2025-11-02",
-    },
-    {
-      id: 102,
-      customer: "Tran Thi B",
-      movie: "Inception",
-      cinema: "BHD Bitexco",
-      seat: "B2",
-      total: 120000,
-      status: "Pending",
-      date: "2025-11-03",
-    },
-    {
-      id: 103,
-      customer: "Le Hoang C",
-      movie: "The Matrix",
-      cinema: "Lotte Keangnam",
-      seat: "A1, A2, A3",
-      total: 360000,
-      status: "Cancelled",
-      date: "2025-10-30",
-    },
+    { id: 1, customer: "Nguyễn Văn A", movie: "Inception", amount: 150000, status: "Paid" },
+    { id: 2, customer: "Trần Thị B", movie: "The Matrix", amount: 200000, status: "Pending" },
+    { id: 3, customer: "Lê Văn C", movie: "Avatar", amount: 250000, status: "Cancelled" },
   ]);
 
-  // Sẵn sàng cho backend sau này
-  useEffect(() => {
-    // fetch("http://localhost:3001/orders")
-    //   .then((res) => res.json())
-    //   .then((data) => setOrders(data));
-  }, []);
+  const [modalType, setModalType] = useState<"create" | "edit" | null>(null);
+  const [editingOrder, setEditingOrder] = useState<any>(null);
 
-  const handleView = (id: number) => alert(`View details for Order ID ${id}`);
-  const handleEdit = (id: number) => alert(`Edit Order ID ${id}`);
+  const handleSave = (order: any) => {
+    if (modalType === "create") {
+      const id = orders.length + 1;
+      setOrders([...orders, { id, ...order }]);
+    } else if (modalType === "edit") {
+      setOrders(orders.map((o) => (o.id === order.id ? order : o)));
+    }
+  };
+
+  const handleEdit = (order: any) => {
+    setEditingOrder(order);
+    setModalType("edit");
+  };
+
   const handleDelete = (id: number) => {
     if (confirm("Delete this order?")) {
       setOrders(orders.filter((o) => o.id !== id));
@@ -51,38 +34,38 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="flex min-h-screen text-gray-900 bg-gray-50">
+    <div className="flex min-h-screen text-gray-900 bg-gray-50 overflow-auto">
       {/* Sidebar */}
-      <aside className="w-60 bg-green-100 p-5 space-y-4 border-r border-gray-300">
+      <aside className="w-60 bg-green-100 p-5 space-y-4 border-r border-gray-300 sticky top-0 h-screen">
         <h2 className="text-xl font-bold mb-3">Admin Panel</h2>
         <nav className="space-y-2">
-          <a href="/movies" className="block text-gray-700 hover:text-green-700">
+          <Link href="/movies" className="block text-gray-700 hover:text-green-700">
             🎬 Movies
-          </a>
-          <a href="/cinema" className="block text-gray-700 hover:text-green-700">
+          </Link>
+          <Link href="/cinema" className="block text-gray-700 hover:text-green-700">
             🏢 Cinema
-          </a>
-          <a href="/users" className="block text-gray-700 hover:text-green-700">
+          </Link>
+          <Link href="/users" className="block text-gray-700 hover:text-green-700">
             👤 Users
-          </a>
-          <a
+          </Link>
+          <Link
             href="/orders"
             className="block text-green-700 font-semibold bg-white shadow rounded p-2"
           >
             📄 Orders
-          </a>
-          <a href="/report" className="block text-gray-700 hover:text-green-700">
+          </Link>
+          <Link href="/report" className="block text-gray-700 hover:text-green-700">
             📊 Reports
-          </a>
+          </Link>
         </nav>
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 relative">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Orders Management</h1>
+          <h1 className="text-2xl font-bold">Order Management</h1>
           <button
-            onClick={() => alert("Create order (chưa kết nối API)")}
+            onClick={() => setModalType("create")}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
           >
             + Create Order
@@ -95,11 +78,8 @@ export default function OrdersPage() {
               <th className="border p-3 text-left">#</th>
               <th className="border p-3 text-left">Customer</th>
               <th className="border p-3 text-left">Movie</th>
-              <th className="border p-3 text-left">Cinema</th>
-              <th className="border p-3 text-left">Seat</th>
-              <th className="border p-3 text-right">Total (VND)</th>
+              <th className="border p-3 text-left">Amount (₫)</th>
               <th className="border p-3 text-left">Status</th>
-              <th className="border p-3 text-left">Date</th>
               <th className="border p-3 text-center w-40">Action</th>
             </tr>
           </thead>
@@ -107,16 +87,12 @@ export default function OrdersPage() {
             {orders.map((o) => (
               <tr key={o.id} className="hover:bg-gray-50">
                 <td className="border p-3">{o.id}</td>
-                <td className="border p-3 font-medium">{o.customer}</td>
+                <td className="border p-3">{o.customer}</td>
                 <td className="border p-3">{o.movie}</td>
-                <td className="border p-3">{o.cinema}</td>
-                <td className="border p-3">{o.seat}</td>
-                <td className="border p-3 text-right">
-                  {o.total.toLocaleString()}
-                </td>
+                <td className="border p-3">{o.amount.toLocaleString()}</td>
                 <td
                   className={`border p-3 font-medium ${
-                    o.status === "Confirmed"
+                    o.status === "Paid"
                       ? "text-green-600"
                       : o.status === "Pending"
                       ? "text-yellow-600"
@@ -125,16 +101,9 @@ export default function OrdersPage() {
                 >
                   {o.status}
                 </td>
-                <td className="border p-3">{o.date}</td>
                 <td className="border p-3 text-center space-x-2">
                   <button
-                    onClick={() => handleView(o.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => handleEdit(o.id)}
+                    onClick={() => handleEdit(o)}
                     className="bg-yellow-400 hover:bg-yellow-500 px-3 py-1 rounded"
                   >
                     Edit
@@ -150,6 +119,19 @@ export default function OrdersPage() {
             ))}
           </tbody>
         </table>
+
+        {/* Popup Overlay */}
+        {modalType && (
+          <OrderModel
+            type={modalType}
+            order={modalType === "edit" ? editingOrder : null}
+            onClose={() => {
+              setModalType(null);
+              setEditingOrder(null);
+            }}
+            onSave={handleSave}
+          />
+        )}
       </main>
     </div>
   );
