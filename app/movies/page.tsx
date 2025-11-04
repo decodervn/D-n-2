@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import MovieModal from "./MovieModel";
+import Link from "next/link"; 
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState([
@@ -13,14 +15,6 @@ export default function MoviesPage() {
     },
     {
       id: 2,
-      title: "Interstellar",
-      genre: "Adventure",
-      duration: "2h 49m",
-      releaseDate: "2014-11-07",
-      status: "Now Showing",
-    },
-    {
-      id: 3,
       title: "Inception",
       genre: "Thriller",
       duration: "2h 28m",
@@ -29,15 +23,26 @@ export default function MoviesPage() {
     },
   ]);
 
-  // Chuẩn bị sẵn cho backend
-  useEffect(() => {
-    // fetch("http://localhost:3001/movies")
-    //   .then((res) => res.json())
-    //   .then((data) => setMovies(data));
-  }, []);
+  const [modalType, setModalType] = useState<"create" | "edit" | null>(null);
+  const [editingMovie, setEditingMovie] = useState<any>(null);
 
-  const handleCreate = () => alert("Create movie (chưa kết nối API)");
-  const handleEdit = (id: number) => alert(`Edit movie ID ${id}`);
+  // === CREATE or UPDATE MOVIE ===
+  const handleSave = (movie: any) => {
+    if (modalType === "create") {
+      const id = movies.length + 1;
+      setMovies([...movies, { id, ...movie }]);
+    } else if (modalType === "edit") {
+      setMovies(movies.map((m) => (m.id === movie.id ? movie : m)));
+    }
+  };
+
+  // === EDIT ===
+  const handleEdit = (movie: any) => {
+    setEditingMovie(movie);
+    setModalType("edit");
+  };
+
+  // === DELETE ===
   const handleDelete = (id: number) => {
     if (confirm("Delete this movie?")) {
       setMovies(movies.filter((m) => m.id !== id));
@@ -45,44 +50,46 @@ export default function MoviesPage() {
   };
 
   return (
-    <div className="flex min-h-screen text-gray-900 bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-60 bg-green-100 p-5 space-y-4 border-r border-gray-300">
-        <h2 className="text-xl font-bold mb-3">Admin Panel</h2>
-        <nav className="space-y-2">
-          <a
-            href="/movies"
-            className="block text-green-700 font-semibold bg-white shadow rounded p-2"
-          >
-            🎬 Movies
-          </a>
-          <a href="/cinema" className="block text-gray-700 hover:text-green-700">
-            🏢 Cinema
-          </a>
-          <a href="/users" className="block text-gray-700 hover:text-green-700">
-            👤 Users
-          </a>
-          <a href="/orders" className="block text-gray-700 hover:text-green-700">
-            📄 Orders
-          </a>
-          <a href="/report" className="block text-gray-700 hover:text-green-700">
-            📊 Reports
-          </a>
-        </nav>
-      </aside>
+    <div className="flex min-h-screen text-gray-900 bg-gray-50 overflow-auto">
+      {/* Sidebar Menu */}
+      {/* Sidebar Menu */}
+<aside className="w-60 bg-green-100 p-5 space-y-4 border-r border-gray-300 sticky top-0 h-screen">
+  <h2 className="text-xl font-bold mb-3">Admin Panel</h2>
+  <nav className="space-y-2">
+    <Link
+      href="/movies"
+      className="block text-green-700 font-semibold bg-white shadow rounded p-2"
+    >
+      🎬 Movies
+    </Link>
+    <Link href="/cinema" className="block text-gray-700 hover:text-green-700">
+      🏢 Cinema
+    </Link>
+    <Link href="/users" className="block text-gray-700 hover:text-green-700">
+      👤 Users
+    </Link>
+    <Link href="/orders" className="block text-gray-700 hover:text-green-700">
+      📄 Orders
+    </Link>
+    <Link href="/report" className="block text-gray-700 hover:text-green-700">
+      📊 Reports
+    </Link>
+  </nav>
+</aside>
 
-      {/* Main */}
-      <main className="flex-1 p-8">
+      {/* Main Content */}
+      <main className="flex-1 p-8 relative">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Movies Management</h1>
           <button
-            onClick={handleCreate}
+            onClick={() => setModalType("create")}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
           >
             + Create Movie
           </button>
         </div>
 
+        {/* Movies Table */}
         <table className="w-full border-collapse border border-gray-300 bg-white shadow-sm">
           <thead className="bg-gray-100 text-gray-800">
             <tr>
@@ -99,7 +106,7 @@ export default function MoviesPage() {
             {movies.map((m) => (
               <tr key={m.id} className="hover:bg-gray-50">
                 <td className="border p-3">{m.id}</td>
-                <td className="border p-3 font-medium">{m.title}</td>
+                <td className="border p-3">{m.title}</td>
                 <td className="border p-3">{m.genre}</td>
                 <td className="border p-3">{m.duration}</td>
                 <td className="border p-3">{m.releaseDate}</td>
@@ -114,7 +121,7 @@ export default function MoviesPage() {
                 </td>
                 <td className="border p-3 text-center space-x-2">
                   <button
-                    onClick={() => handleEdit(m.id)}
+                    onClick={() => handleEdit(m)}
                     className="bg-yellow-400 hover:bg-yellow-500 px-3 py-1 rounded"
                   >
                     Edit
@@ -130,6 +137,19 @@ export default function MoviesPage() {
             ))}
           </tbody>
         </table>
+
+        {/* Popup Create/Edit Movie */}
+        {modalType && (
+          <MovieModal
+            type={modalType}
+            movie={modalType === "edit" ? editingMovie : null}
+            onClose={() => {
+              setModalType(null);
+              setEditingMovie(null);
+            }}
+            onSave={handleSave}
+          />
+        )}
       </main>
     </div>
   );
