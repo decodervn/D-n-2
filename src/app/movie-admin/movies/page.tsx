@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
+import AdminLayout from "../../components/AdminLayout";
 import MovieModel from "./MovieModel";
 
 export default function MoviesPage() {

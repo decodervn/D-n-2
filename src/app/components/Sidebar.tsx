@@ -25,12 +25,12 @@ export default function Sidebar() {
         <span className="mr-2">📊</span> TailAdmin
       </div>
       <nav className="px-3 py-4 space-y-1">
-        <Item href="/dashboard" label="Dashboard" icon="🏠" />
-        <Item href="/movies" label="Movies" icon="🎬" />
-        <Item href="/cinema" label="Cinemas" icon="🏢" />
-        <Item href="/users" label="Users" icon="👤" />
-        <Item href="/orders" label="Orders" icon="🧾" />
-        <Item href="/report" label="Reports" icon="📈" />
+        <Item href="/movie-admin/dashboard" label="Dashboard" icon="🏠" />
+        <Item href="/movie-admin/movies" label="Movies" icon="🎬" />
+        <Item href="/movie-admin/cinema" label="Cinemas" icon="🏢" />
+        <Item href="/movie-admin/users" label="Users" icon="👤" />
+        <Item href="/movie-admin/orders" label="Orders" icon="🧾" />
+        <Item href="/movie-admin/report" label="Reports" icon="📈" />
       </nav>
       <div className="mt-auto p-4 text-xs text-slate-400">© 2025</div>
     </aside>

@@ -6,12 +6,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   const links = [
-    { href: "/movies", label: "🎬 Movies" },
-    { href: "/cinema", label: "🏢 Cinema" },
-    { href: "/users", label: "👤 Users" },
-    { href: "/orders", label: "🧾 Orders" },
-    { href: "/report", label: "📈 Reports" },
-    { href: "/screens", label: "🖥️ Screens" },
+    { href: "/movie-admin/movies", label: "🎬 Movies" },
+    { href: "/movie-admin/cinema", label: "🏢 Cinema" },
+    { href: "/movie-admin/users", label: "👤 Users" },
+    { href: "/movie-admin/orders", label: "🧾 Orders" },
+    { href: "/movie-admin/report", label: "📈 Reports" },
+    { href: "/movie-admin/screens", label: "🖥️ Screens" },
   ];
 
   return (

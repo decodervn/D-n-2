@@ -1,38 +1,38 @@
 "use client";
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
-import CinemaModel from "./CinemaModel";
+import AdminLayout from "../../components/AdminLayout";
+import OrderModel from "./OrderModel";
 
-type Cinema = {
+type Order = {
   id: number;
-  name: string;
-  location: string;
-  seats: number;
+  customer: string;
+  movie: string;
+  amount: number;
   status: string;
 };
 
-export default function CinemaPage() {
-  const [cinemas, setCinemas] = useState<Cinema[]>([
-    { id: 1, name: "CGV Vincom Bà Triệu", location: "Hà Nội", seats: 150, status: "Active" },
-    { id: 2, name: "Lotte Keangnam", location: "Hà Nội", seats: 200, status: "Active" },
-    { id: 3, name: "Beta Thái Hà", location: "Hà Nội", seats: 120, status: "Maintenance" },
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([
+    { id: 1, customer: "Nguyen Van A", movie: "Inception", amount: 120000, status: "Paid" },
+    { id: 2, customer: "Tran Thi B", movie: "Avatar", amount: 150000, status: "Pending" },
+    { id: 3, customer: "Le Van C", movie: "The Matrix", amount: 100000, status: "Cancelled" },
   ]);
 
   const [modalType, setModalType] = useState<"create" | "edit" | null>(null);
-  const [editingCinema, setEditingCinema] = useState<Cinema | null>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
-  const handleSave = (c: any) => {
-    if (modalType === "create") setCinemas(prev => [...prev, { id: prev.length + 1, ...c }]);
-    if (modalType === "edit") setCinemas(prev => prev.map(x => (x.id === c.id ? c : x)));
+  const handleSave = (o: any) => {
+    if (modalType === "create") setOrders(prev => [...prev, { id: prev.length + 1, ...o }]);
+    if (modalType === "edit") setOrders(prev => prev.map(x => (x.id === o.id ? o : x)));
   };
 
-  const handleEdit = (c: Cinema) => {
-    setEditingCinema(c);
+  const handleEdit = (o: Order) => {
+    setEditingOrder(o);
     setModalType("edit");
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Delete this cinema?")) setCinemas(cinemas.filter(c => c.id !== id));
+    if (confirm("Delete this order?")) setOrders(orders.filter(o => o.id !== id));
   };
 
   return (
@@ -40,12 +40,12 @@ export default function CinemaPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight text-emerald-300">🏢 Cinema Management</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-emerald-300">🧾 Order Management</h1>
           <button
             onClick={() => setModalType("create")}
             className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg transition-all"
           >
-            + Create Cinema
+            + Create Order
           </button>
         </header>
 
@@ -55,43 +55,43 @@ export default function CinemaPage() {
             <thead className="bg-emerald-900/70 text-emerald-300 uppercase tracking-wide text-xs">
               <tr>
                 <th className="px-4 py-3 text-left">#</th>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Location</th>
-                <th className="px-4 py-3 text-left">Seats</th>
+                <th className="px-4 py-3 text-left">Customer</th>
+                <th className="px-4 py-3 text-left">Movie</th>
+                <th className="px-4 py-3 text-left">Amount (₫)</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {cinemas.map((c, idx) => (
-                <tr key={c.id} className="border-t border-emerald-700/30 hover:bg-emerald-800/20 transition">
+              {orders.map((o, idx) => (
+                <tr key={o.id} className="border-t border-emerald-700/30 hover:bg-emerald-800/20 transition">
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 font-medium">{c.name}</td>
-                  <td className="px-4 py-3">{c.location}</td>
-                  <td className="px-4 py-3">{c.seats}</td>
+                  <td className="px-4 py-3 font-medium">{o.customer}</td>
+                  <td className="px-4 py-3">{o.movie}</td>
+                  <td className="px-4 py-3">{o.amount.toLocaleString()} ₫</td>
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        c.status === "Active"
+                        o.status === "Paid"
                           ? "bg-emerald-500/20 text-emerald-300"
-                          : c.status === "Maintenance"
+                          : o.status === "Pending"
                           ? "bg-amber-500/20 text-amber-300"
-                          : "bg-slate-500/20 text-slate-300"
+                          : "bg-rose-500/20 text-rose-300"
                       }`}
                     >
-                      {c.status}
+                      {o.status}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right space-x-2">
                     <button
-                      onClick={() => handleEdit(c)}
+                      onClick={() => handleEdit(o)}
                       className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(c.id)}
+                      onClick={() => handleDelete(o.id)}
                       className="px-3 py-1 rounded-md bg-rose-600 hover:bg-rose-500 text-white font-medium transition-colors"
                     >
                       Delete
@@ -105,12 +105,12 @@ export default function CinemaPage() {
 
         {/* Modal */}
         {modalType && (
-          <CinemaModel
+          <OrderModel
             type={modalType}
-            cinema={modalType === "edit" ? editingCinema : null}
+            order={modalType === "edit" ? editingOrder : null}
             onClose={() => {
               setModalType(null);
-              setEditingCinema(null);
+              setEditingOrder(null);
             }}
             onSave={handleSave}
           />
