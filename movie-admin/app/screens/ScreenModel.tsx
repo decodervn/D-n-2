@@ -1,20 +1,21 @@
 "use client";
 import { useState, useRef } from "react";
 
-interface CinemaModalProps {
+interface ScreenModalProps {
   type: "create" | "edit";
-  cinema?: any;
+  screen?: any;
   onClose: () => void;
-  onSave: (cinema: any) => void;
+  onSave: (screen: any) => void;
 }
 
-export default function CinemaModel({ type, cinema, onClose, onSave }: CinemaModalProps) {
+export default function ScreenModel({ type, screen, onClose, onSave }: ScreenModalProps) {
   const [data, setData] = useState(
-    cinema || {
+    screen || {
       name: "",
-      location: "",
-      seats: 0,
-      status: "Active",
+      capacity: 0,
+      format: "",
+      size_width_meters: 0,
+      size_height_meters: 0,
     }
   );
 
@@ -53,13 +54,12 @@ export default function CinemaModel({ type, cinema, onClose, onSave }: CinemaMod
         className="absolute bg-gradient-to-br from-emerald-950 via-black to-emerald-900 border border-emerald-700 shadow-2xl rounded-xl w-[460px] text-white p-6 cursor-grab"
         style={{ top: "20%", left: "35%" }}
       >
-        {/* Header */}
         <div
           onMouseDown={startDrag}
           className="flex justify-between items-center mb-4 bg-emerald-800/50 px-3 py-2 rounded-md cursor-move select-none"
         >
           <h2 className="text-lg font-semibold text-emerald-300 tracking-wide">
-            {type === "create" ? "➕ Create Cinema" : "✏️ Edit Cinema"}
+            {type === "create" ? "➕ Create Screen" : "✏️ Edit Screen"}
           </h2>
           <button
             onClick={onClose}
@@ -69,10 +69,9 @@ export default function CinemaModel({ type, cinema, onClose, onSave }: CinemaMod
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-sm text-emerald-200 mb-1">Cinema Name</label>
+            <label className="block text-sm text-emerald-200 mb-1">Name</label>
             <input
               type="text"
               required
@@ -83,42 +82,51 @@ export default function CinemaModel({ type, cinema, onClose, onSave }: CinemaMod
           </div>
 
           <div>
-            <label className="block text-sm text-emerald-200 mb-1">Location</label>
+            <label className="block text-sm text-emerald-200 mb-1">Capacity</label>
+            <input
+              type="number"
+              required
+              min={1}
+              value={data.capacity}
+              onChange={(e) => setData({ ...data, capacity: Number(e.target.value) })}
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-emerald-200 mb-1">Format</label>
             <input
               type="text"
               required
-              value={data.location}
-              onChange={(e) => setData({ ...data, location: e.target.value })}
+              value={data.format}
+              onChange={(e) => setData({ ...data, format: e.target.value })}
               className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-emerald-200 mb-1">Seats</label>
-            <input
-              type="number"
-              min={1}
-              required
-              value={data.seats}
-              onChange={(e) => setData({ ...data, seats: Number(e.target.value) })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm text-emerald-200 mb-1">Width (m)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={data.size_width_meters}
+                onChange={(e) => setData({ ...data, size_width_meters: Number(e.target.value) })}
+                className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-emerald-200 mb-1">Height (m)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={data.size_height_meters}
+                onChange={(e) => setData({ ...data, size_height_meters: Number(e.target.value) })}
+                className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm text-emerald-200 mb-1">Status</label>
-            <select
-              value={data.status}
-              onChange={(e) => setData({ ...data, status: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option>Active</option>
-              <option>Maintenance</option>
-              <option>Closed</option>
-            </select>
-          </div>
-
-          {/* Buttons */}
           <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"

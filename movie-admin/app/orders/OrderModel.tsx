@@ -42,65 +42,70 @@ export default function OrderModel({ type, order, onClose, onSave }: OrderModalP
   };
 
   return (
-    <div className="fixed inset-0 bg-transparent backdrop-blur-[2px] flex justify-center items-center z-50 overflow-auto">
+    <div className="fixed inset-0 flex justify-center items-center bg-black/70 backdrop-blur-sm z-50">
       <div
         ref={modalRef}
-        className="absolute bg-white rounded-lg shadow-lg p-6 w-[460px] cursor-grab"
+        className="absolute bg-gradient-to-br from-emerald-950 via-black to-emerald-900 border border-emerald-700 shadow-2xl rounded-xl w-[460px] text-white p-6 cursor-grab"
         style={{ top: "20%", left: "35%" }}
       >
+        {/* Header */}
         <div
           onMouseDown={startDrag}
-          className="flex justify-between items-center mb-4 cursor-move bg-gray-200 p-2 rounded"
+          className="flex justify-between items-center mb-4 bg-emerald-800/50 px-3 py-2 rounded-md cursor-move select-none"
         >
-          <h2 className="text-lg font-bold">
-            {type === "create" ? "Create Order" : "Edit Order"}
+          <h2 className="text-lg font-semibold text-emerald-300 tracking-wide">
+            {type === "create" ? "➕ Create Order" : "✏️ Edit Order"}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-black text-xl">
+          <button
+            onClick={onClose}
+            className="text-emerald-300 hover:text-white text-xl font-bold"
+          >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-3">
+        {/* Form */}
+        <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Customer Name</label>
+            <label className="block text-sm text-emerald-200 mb-1">Customer Name</label>
             <input
               type="text"
               required
               value={data.customer}
               onChange={(e) => setData({ ...data, customer: e.target.value })}
-              className="w-full border p-2 rounded"
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Movie</label>
+            <label className="block text-sm text-emerald-200 mb-1">Movie</label>
             <input
               type="text"
               required
               value={data.movie}
               onChange={(e) => setData({ ...data, movie: e.target.value })}
-              className="w-full border p-2 rounded"
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Amount (₫)</label>
+            <label className="block text-sm text-emerald-200 mb-1">Amount (₫)</label>
             <input
               type="number"
               min={0}
               required
               value={data.amount}
               onChange={(e) => setData({ ...data, amount: Number(e.target.value) })}
-              className="w-full border p-2 rounded"
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Status</label>
+            <label className="block text-sm text-emerald-200 mb-1">Status</label>
             <select
               value={data.status}
               onChange={(e) => setData({ ...data, status: e.target.value })}
-              className="w-full border p-2 rounded"
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option>Pending</option>
               <option>Paid</option>
@@ -108,17 +113,18 @@ export default function OrderModel({ type, order, onClose, onSave }: OrderModalP
             </select>
           </div>
 
-          <div className="flex justify-end space-x-3 mt-4">
+          {/* Buttons */}
+          <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+              className="px-4 py-2 bg-emerald-700/40 hover:bg-emerald-700 text-emerald-200 rounded-md border border-emerald-600 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-md shadow-md transition-all"
             >
               Save
             </button>

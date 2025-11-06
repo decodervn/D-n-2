@@ -1,126 +1,109 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import AdminLayout from "@/components/AdminLayout";
 import OrderModel from "./OrderModel";
 
-export default function OrderPage() {
-  const [orders, setOrders] = useState([
-    { id: 1, customer: "Nguyễn Văn A", movie: "Inception", amount: 150000, status: "Paid" },
-    { id: 2, customer: "Trần Thị B", movie: "The Matrix", amount: 200000, status: "Pending" },
-    { id: 3, customer: "Lê Văn C", movie: "Avatar", amount: 250000, status: "Cancelled" },
+type Order = {
+  id: number;
+  customer: string;
+  movie: string;
+  amount: number;
+  status: string;
+};
+
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([
+    { id: 1, customer: "Nguyen Van A", movie: "Inception", amount: 120000, status: "Paid" },
+    { id: 2, customer: "Tran Thi B", movie: "Avatar", amount: 150000, status: "Pending" },
+    { id: 3, customer: "Le Van C", movie: "The Matrix", amount: 100000, status: "Cancelled" },
   ]);
 
   const [modalType, setModalType] = useState<"create" | "edit" | null>(null);
-  const [editingOrder, setEditingOrder] = useState<any>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
-  const handleSave = (order: any) => {
-    if (modalType === "create") {
-      const id = orders.length + 1;
-      setOrders([...orders, { id, ...order }]);
-    } else if (modalType === "edit") {
-      setOrders(orders.map((o) => (o.id === order.id ? order : o)));
-    }
+  const handleSave = (o: any) => {
+    if (modalType === "create") setOrders(prev => [...prev, { id: prev.length + 1, ...o }]);
+    if (modalType === "edit") setOrders(prev => prev.map(x => (x.id === o.id ? o : x)));
   };
 
-  const handleEdit = (order: any) => {
-    setEditingOrder(order);
+  const handleEdit = (o: Order) => {
+    setEditingOrder(o);
     setModalType("edit");
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Delete this order?")) {
-      setOrders(orders.filter((o) => o.id !== id));
-    }
+    if (confirm("Delete this order?")) setOrders(orders.filter(o => o.id !== id));
   };
 
   return (
-    <div className="flex min-h-screen text-gray-900 bg-gray-50 overflow-auto">
-      {/* Sidebar */}
-      <aside className="w-60 bg-green-100 p-5 space-y-4 border-r border-gray-300 sticky top-0 h-screen">
-        <h2 className="text-xl font-bold mb-3">Admin Panel</h2>
-        <nav className="space-y-2">
-          <Link href="/movies" className="block text-gray-700 hover:text-green-700">
-            🎬 Movies
-          </Link>
-          <Link href="/cinema" className="block text-gray-700 hover:text-green-700">
-            🏢 Cinema
-          </Link>
-          <Link href="/users" className="block text-gray-700 hover:text-green-700">
-            👤 Users
-          </Link>
-          <Link
-            href="/orders"
-            className="block text-green-700 font-semibold bg-white shadow rounded p-2"
-          >
-            📄 Orders
-          </Link>
-          <Link href="/report" className="block text-gray-700 hover:text-green-700">
-            📊 Reports
-          </Link>
-        </nav>
-      </aside>
-
-      {/* Main */}
-      <main className="flex-1 p-8 relative">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Order Management</h1>
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-semibold tracking-tight text-emerald-300">🧾 Order Management</h1>
           <button
             onClick={() => setModalType("create")}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg transition-all"
           >
             + Create Order
           </button>
+        </header>
+
+        {/* Table */}
+        <div className="overflow-hidden rounded-xl shadow-lg bg-black/50 backdrop-blur-sm border border-emerald-600/40">
+          <table className="w-full text-sm text-white/90">
+            <thead className="bg-emerald-900/70 text-emerald-300 uppercase tracking-wide text-xs">
+              <tr>
+                <th className="px-4 py-3 text-left">#</th>
+                <th className="px-4 py-3 text-left">Customer</th>
+                <th className="px-4 py-3 text-left">Movie</th>
+                <th className="px-4 py-3 text-left">Amount (₫)</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {orders.map((o, idx) => (
+                <tr key={o.id} className="border-t border-emerald-700/30 hover:bg-emerald-800/20 transition">
+                  <td className="px-4 py-3">{idx + 1}</td>
+                  <td className="px-4 py-3 font-medium">{o.customer}</td>
+                  <td className="px-4 py-3">{o.movie}</td>
+                  <td className="px-4 py-3">{o.amount.toLocaleString()} ₫</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        o.status === "Paid"
+                          ? "bg-emerald-500/20 text-emerald-300"
+                          : o.status === "Pending"
+                          ? "bg-amber-500/20 text-amber-300"
+                          : "bg-rose-500/20 text-rose-300"
+                      }`}
+                    >
+                      {o.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right space-x-2">
+                    <button
+                      onClick={() => handleEdit(o)}
+                      className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(o.id)}
+                      className="px-3 py-1 rounded-md bg-rose-600 hover:bg-rose-500 text-white font-medium transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        <table className="w-full border-collapse border border-gray-300 bg-white shadow-sm">
-          <thead className="bg-gray-100 text-gray-800">
-            <tr>
-              <th className="border p-3 text-left">#</th>
-              <th className="border p-3 text-left">Customer</th>
-              <th className="border p-3 text-left">Movie</th>
-              <th className="border p-3 text-left">Amount (₫)</th>
-              <th className="border p-3 text-left">Status</th>
-              <th className="border p-3 text-center w-40">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((o) => (
-              <tr key={o.id} className="hover:bg-gray-50">
-                <td className="border p-3">{o.id}</td>
-                <td className="border p-3">{o.customer}</td>
-                <td className="border p-3">{o.movie}</td>
-                <td className="border p-3">{o.amount.toLocaleString()}</td>
-                <td
-                  className={`border p-3 font-medium ${
-                    o.status === "Paid"
-                      ? "text-green-600"
-                      : o.status === "Pending"
-                      ? "text-yellow-600"
-                      : "text-red-500"
-                  }`}
-                >
-                  {o.status}
-                </td>
-                <td className="border p-3 text-center space-x-2">
-                  <button
-                    onClick={() => handleEdit(o)}
-                    className="bg-yellow-400 hover:bg-yellow-500 px-3 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(o.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Popup Overlay */}
+        {/* Modal */}
         {modalType && (
           <OrderModel
             type={modalType}
@@ -132,7 +115,7 @@ export default function OrderPage() {
             onSave={handleSave}
           />
         )}
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
