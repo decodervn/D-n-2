@@ -1,145 +1,97 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState } from "react";
 
-interface MovieModalProps {
-  type: "create" | "edit";
-  movie?: any;
-  onClose: () => void;
-  onSave: (movie: any) => void;
-}
-
-export default function MovieModel({ type, movie, onClose, onSave }: MovieModalProps) {
+export default function MovieModel({ type, movie, onClose, onSave }: any) {
   const [data, setData] = useState(
     movie || {
       title: "",
+      description: "",
       genre: "",
-      duration: "",
-      releaseDate: "",
-      status: "Now Showing",
+      duration: 0,
+      release_date: "",
+      poster_url: "",
     }
   );
 
-  const modalRef = useRef<HTMLDivElement | null>(null);
-  const drag = useRef({ offsetX: 0, offsetY: 0 });
-
-  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!modalRef.current) return;
-    drag.current.offsetX = e.clientX - modalRef.current.offsetLeft;
-    drag.current.offsetY = e.clientY - modalRef.current.offsetTop;
-    document.addEventListener("mousemove", onDrag);
-    document.addEventListener("mouseup", stopDrag);
-  };
-
-  const onDrag = (e: MouseEvent) => {
-    if (!modalRef.current) return;
-    modalRef.current.style.left = `${e.clientX - drag.current.offsetX}px`;
-    modalRef.current.style.top = `${e.clientY - drag.current.offsetY}px`;
-  };
-
-  const stopDrag = () => {
-    document.removeEventListener("mousemove", onDrag);
-    document.removeEventListener("mouseup", stopDrag);
-  };
-
-  const handleSave = (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
+    const method = type === "create" ? "POST" : "PUT";
+    const url =
+      type === "create"
+        ? "http://localhost:3000/movies"
+        : `http://localhost:3000/movies/${movie.id}`;
+
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
     onSave(data);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black/70 backdrop-blur-sm z-50">
-      <div
-        ref={modalRef}
-        className="absolute bg-gradient-to-br from-emerald-950 via-black to-emerald-900 border border-emerald-700 shadow-2xl rounded-xl w-[460px] text-white p-6 cursor-grab"
-        style={{ top: "20%", left: "35%" }}
-      >
-        {/* Header */}
-        <div
-          onMouseDown={startDrag}
-          className="flex justify-between items-center mb-4 bg-emerald-800/50 px-3 py-2 rounded-md cursor-move select-none"
-        >
-          <h2 className="text-lg font-semibold text-emerald-300 tracking-wide">
-            {type === "create" ? "➕ Create Movie" : "✏️ Edit Movie"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-emerald-300 hover:text-white text-xl font-bold"
-          >
-            ✕
-          </button>
-        </div>
+    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+      <div className="bg-gray-900 text-white p-6 rounded-lg w-[500px]">
+        <h2 className="text-lg font-semibold mb-4">
+          {type === "create" ? "Add Movie" : "Edit Movie"}
+        </h2>
 
-        {/* Form */}
-        <form onSubmit={handleSave} className="space-y-4">
-          <div>
-            <label className="block text-sm text-emerald-200 mb-1">Title</label>
-            <input
-              type="text"
-              required
-              value={data.title}
-              onChange={(e) => setData({ ...data, title: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="text"
+            placeholder="Title"
+            value={data.title}
+            onChange={(e) => setData({ ...data, title: e.target.value })}
+            className="w-full border border-gray-700 p-2 rounded bg-gray-800"
+          />
+          <input
+            type="text"
+            placeholder="Description"
+            value={data.description}
+            onChange={(e) => setData({ ...data, description: e.target.value })}
+            className="w-full border border-gray-700 p-2 rounded bg-gray-800"
+          />
+          <input
+            type="text"
+            placeholder="Genre"
+            value={data.genre}
+            onChange={(e) => setData({ ...data, genre: e.target.value })}
+            className="w-full border border-gray-700 p-2 rounded bg-gray-800"
+          />
+          <input
+            type="number"
+            placeholder="Duration (minutes)"
+            value={data.duration}
+            onChange={(e) => setData({ ...data, duration: Number(e.target.value) })}
+            className="w-full border border-gray-700 p-2 rounded bg-gray-800"
+          />
+          <input
+            type="date"
+            value={data.release_date}
+            onChange={(e) => setData({ ...data, release_date: e.target.value })}
+            className="w-full border border-gray-700 p-2 rounded bg-gray-800"
+          />
+          <input
+            type="text"
+            placeholder="Poster URL"
+            value={data.poster_url}
+            onChange={(e) => setData({ ...data, poster_url: e.target.value })}
+            className="w-full border border-gray-700 p-2 rounded bg-gray-800"
+          />
 
-          <div>
-            <label className="block text-sm text-emerald-200 mb-1">Genre</label>
-            <input
-              type="text"
-              required
-              value={data.genre}
-              onChange={(e) => setData({ ...data, genre: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-emerald-200 mb-1">Duration</label>
-            <input
-              type="text"
-              placeholder="e.g., 2h 16m"
-              value={data.duration}
-              onChange={(e) => setData({ ...data, duration: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-emerald-200 mb-1">Release Date</label>
-            <input
-              type="date"
-              value={data.releaseDate}
-              onChange={(e) => setData({ ...data, releaseDate: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-emerald-200 mb-1">Status</label>
-            <select
-              value={data.status}
-              onChange={(e) => setData({ ...data, status: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option>Now Showing</option>
-              <option>Coming Soon</option>
-              <option>Archived</option>
-            </select>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end gap-3 mt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-emerald-700/40 hover:bg-emerald-700 text-emerald-200 rounded-md border border-emerald-600 transition-all"
+              className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-md shadow-md transition-all"
+              className="bg-green-500 px-4 py-2 rounded hover:bg-green-600"
             >
               Save
             </button>
