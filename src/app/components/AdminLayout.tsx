@@ -12,6 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/movie-admin/orders", label: "🧾 Orders" },
     { href: "/movie-admin/report", label: "📈 Reports" },
     { href: "/movie-admin/screens", label: "🖥️ Screens" },
+    { href: "/movie-admin/seats", label: "🪑 Seat" },
   ];
 
   return (

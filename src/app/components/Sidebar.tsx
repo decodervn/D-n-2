@@ -31,6 +31,7 @@ export default function Sidebar() {
         <Item href="/movie-admin/users" label="Users" icon="👤" />
         <Item href="/movie-admin/orders" label="Orders" icon="🧾" />
         <Item href="/movie-admin/report" label="Reports" icon="📈" />
+        <Item href="/movie-admin/seats" label="Reports" icon="📈" />
       </nav>
       <div className="mt-auto p-4 text-xs text-slate-400">© 2025</div>
     </aside>

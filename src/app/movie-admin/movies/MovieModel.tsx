@@ -15,18 +15,13 @@ export default function MovieModel({ type, movie, onClose, onSave }: any) {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const method = type === "create" ? "POST" : "PUT";
-    const url =
-      type === "create"
-        ? "http://localhost:3000/movies"
-        : `http://localhost:3000/movies/${movie.id}`;
 
-    await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    // ❌ ĐÃ XÓA BỎ LOGIC FETCH TẠI ĐÂY
+    // const method = type === "create" ? "POST" : "PUT";
+    // const url = ...
+    // await fetch(url, { ... });
 
+    // ✅ CHỈ CẦN GỌI onSave VÀ TRUYỀN DỮ LIỆU LÊN CHO CHA
     onSave(data);
     onClose();
   };
@@ -38,6 +33,7 @@ export default function MovieModel({ type, movie, onClose, onSave }: any) {
           {type === "create" ? "Add Movie" : "Edit Movie"}
         </h2>
 
+        {/* Toàn bộ form JSX của bạn giữ nguyên, nó đã đúng */}
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="text"
