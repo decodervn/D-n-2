@@ -1,28 +1,41 @@
 "use client";
+
 import { useState, useRef } from "react";
+import type { Screen } from "./page";
 
 interface ScreenModalProps {
   type: "create" | "edit";
-  screen?: any;
+  screen?: Screen;
   onClose: () => void;
-  onSave: (screen: any) => void;
+  onSave: (data: Omit<Screen, "id">) => void;
 }
 
-export default function ScreenModel({ type, screen, onClose, onSave }: ScreenModalProps) {
-  const [data, setData] = useState(
-    screen || {
-      name: "",
-      capacity: 0,
-      format: "",
-      size_width_meters: 0,
-      size_height_meters: 0,
-    }
-  );
+// Các giá trị value phải trùng enum ở backend (xem Swagger)
+const SCREEN_FORMATS = [
+  { value: "Standard", label: "2D (Standard)" },
+  { value: "3D", label: "3D" },
+  { value: "IMAX", label: "IMAX" },
+  { value: "Dolby Cinema", label: "Dolby Cinema" },
+];
+
+export default function ScreenModel({
+  type,
+  screen,
+  onClose,
+  onSave,
+}: ScreenModalProps) {
+  const [data, setData] = useState<Omit<Screen, "id">>({
+    name: screen?.name ?? "",
+    capacity: screen?.capacity ?? 0,
+    format: screen?.format ?? "Standard",
+    size_width_meters: screen?.size_width_meters ?? 0,
+    size_height_meters: screen?.size_height_meters ?? 0,
+  });
 
   const modalRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef({ offsetX: 0, offsetY: 0 });
 
-  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+  const startDrag = (e: React.MouseEvent) => {
     if (!modalRef.current) return;
     drag.current.offsetX = e.clientX - modalRef.current.offsetLeft;
     drag.current.offsetY = e.clientY - modalRef.current.offsetTop;
@@ -41,103 +54,137 @@ export default function ScreenModel({ type, screen, onClose, onSave }: ScreenMod
     document.removeEventListener("mouseup", stopDrag);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(data);
-    onClose();
+    onSave({
+      ...data,
+      capacity: Number(data.capacity),
+      size_width_meters:
+        data.size_width_meters != null
+          ? Number(data.size_width_meters)
+          : null,
+      size_height_meters:
+        data.size_height_meters != null
+          ? Number(data.size_height_meters)
+          : null,
+    });
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black/70 backdrop-blur-sm z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div
         ref={modalRef}
-        className="absolute bg-gradient-to-br from-emerald-950 via-black to-emerald-900 border border-emerald-700 shadow-2xl rounded-xl w-[460px] text-white p-6 cursor-grab"
-        style={{ top: "20%", left: "35%" }}
+        className="w-full max-w-lg rounded-2xl bg-slate-900 shadow-2xl border border-emerald-700/60"
       >
         <div
+          className="flex items-center justify-between px-6 py-3 cursor-move bg-slate-800/80 rounded-t-2xl"
           onMouseDown={startDrag}
-          className="flex justify-between items-center mb-4 bg-emerald-800/50 px-3 py-2 rounded-md cursor-move select-none"
         >
-          <h2 className="text-lg font-semibold text-emerald-300 tracking-wide">
-            {type === "create" ? "➕ Create Screen" : "✏️ Edit Screen"}
+          <h2 className="text-lg font-semibold text-white">
+            {type === "create" ? "Add Screen" : "Edit Screen"}
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="text-emerald-300 hover:text-white text-xl font-bold"
+            className="text-slate-300 hover:text-white"
           >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           <div>
-            <label className="block text-sm text-emerald-200 mb-1">Name</label>
+            <label className="block text-sm text-slate-300 mb-1">Name</label>
             <input
-              type="text"
-              required
               value={data.name}
               onChange={(e) => setData({ ...data, name: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/40 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-emerald-200 mb-1">Capacity</label>
+            <label className="block text-sm text-slate-300 mb-1">
+              Capacity
+            </label>
             <input
               type="number"
-              required
               min={1}
               value={data.capacity}
-              onChange={(e) => setData({ ...data, capacity: Number(e.target.value) })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) =>
+                setData({ ...data, capacity: Number(e.target.value) })
+              }
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/40 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-emerald-200 mb-1">Format</label>
-            <input
-              type="text"
-              required
+            <label className="block text-sm text-slate-300 mb-1">Format</label>
+            <select
               value={data.format}
-              onChange={(e) => setData({ ...data, format: e.target.value })}
-              className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+              onChange={(e) =>
+                setData({ ...data, format: e.target.value as string })
+              }
+              className="w-full rounded-md border border-emerald-700 bg-emerald-900/40 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              {SCREEN_FORMATS.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-emerald-200 mb-1">Width (m)</label>
+              <label className="block text-sm text-slate-300 mb-1">
+                Width (m)
+              </label>
               <input
                 type="number"
-                step="0.1"
-                value={data.size_width_meters}
-                onChange={(e) => setData({ ...data, size_width_meters: Number(e.target.value) })}
-                className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                min={0}
+                value={data.size_width_meters ?? ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    size_width_meters:
+                      e.target.value === "" ? null : Number(e.target.value),
+                  })
+                }
+                className="w-full rounded-md border border-emerald-700 bg-emerald-900/40 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
+
             <div>
-              <label className="block text-sm text-emerald-200 mb-1">Height (m)</label>
+              <label className="block text-sm text-slate-300 mb-1">
+                Height (m)
+              </label>
               <input
                 type="number"
-                step="0.1"
-                value={data.size_height_meters}
-                onChange={(e) => setData({ ...data, size_height_meters: Number(e.target.value) })}
-                className="w-full rounded-md border border-emerald-700 bg-emerald-900/50 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                min={0}
+                value={data.size_height_meters ?? ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    size_height_meters:
+                      e.target.value === "" ? null : Number(e.target.value),
+                  })
+                }
+                className="w-full rounded-md border border-emerald-700 bg-emerald-900/40 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-emerald-700/40 hover:bg-emerald-700 text-emerald-200 rounded-md border border-emerald-600 transition-all"
+              className="px-4 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-100"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-md shadow-md transition-all"
+              className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
             >
               Save
             </button>

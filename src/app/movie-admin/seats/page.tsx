@@ -1,14 +1,13 @@
-// Giả sử file này là: app/movie-admin/seats/page.tsx
+// app/movie-admin/seats/page.tsx
 "use client";
+
 import { useEffect, useState } from "react";
-// Giả sử AdminLayout ở thư mục components
-import AdminLayout from "../../components/AdminLayout"; 
-// Giả sử SeatModel nằm cùng thư mục (giống như MovieModel)
-import SeatModel from "./SeatModel"; 
+import AdminLayout from "../../components/AdminLayout";
+import SeatModel from "./SeatModel";
 
 // 1. Định nghĩa Type cho Seat (dựa trên database schema)
 type Seat = {
-  id: string; // VARCHAR(36) trong DB của bạn là string (UUID)
+  id: string; // VARCHAR(36) trong DB là string (UUID)
   screenId: string;
   row: string;
   col: number;
@@ -20,49 +19,103 @@ type Seat = {
   priceMultiplier: number;
 };
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const SEAT_API_URL = `${API_BASE}/seat`;
+
 export default function SeatsPage() {
-  // 2. Đổi State từ 'movies' sang 'seats'
   const [seats, setSeats] = useState<Seat[]>([]);
   const [modalType, setModalType] = useState<"create" | "edit" | null>(null);
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
 
-  // 3. Đổi API URL
-  const apiURL = "http://localhost:3000/seats"; // backend NestJS
-
   // --- Load dữ liệu seat ---
   useEffect(() => {
-    fetch(apiURL)
-      .then((res) => res.json())
-      .then((data) => setSeats(data))
-      .catch((err) => console.error("Failed to load seats:", err));
+    const loadSeats = async () => {
+      try {
+        const res = await fetch(SEAT_API_URL, { cache: "no-store" });
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(
+            `Load seats failed: ${res.status} ${res.statusText} - ${text}`,
+          );
+          setSeats([]); // đảm bảo vẫn là mảng
+          return;
+        }
+
+        const body = await res.json();
+
+        // Hỗ trợ các kiểu response khác nhau: [], {data: []}, {items: []}
+        let list: unknown = body;
+        if (Array.isArray(body)) {
+          list = body;
+        } else if (Array.isArray(body?.data)) {
+          list = body.data;
+        } else if (Array.isArray(body?.items)) {
+          list = body.items;
+        }
+
+        if (Array.isArray(list)) {
+          setSeats(list as Seat[]);
+        } else {
+          console.error("Unexpected seats response shape:", body);
+          setSeats([]);
+        }
+      } catch (err) {
+        console.error("Failed to load seats:", err);
+        setSeats([]);
+      }
+    };
+
+    loadSeats();
   }, []);
 
   // --- Save seat (Create hoặc Edit) ---
   const handleSave = async (seatData: any) => {
     try {
+      const payload = {
+        ...seatData,
+        col: Number(seatData.col),
+        priceMultiplier: Number(seatData.priceMultiplier),
+      };
+
+      let res: Response | null = null;
+
       if (modalType === "create") {
-        const res = await fetch(apiURL, {
+        res = await fetch(SEAT_API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(seatData),
+          body: JSON.stringify(payload),
         });
-        const newSeat = await res.json();
-        setSeats((prev) => [...prev, newSeat]);
-      }
-
-      if (modalType === "edit" && editingSeat) {
-        const res = await fetch(`${apiURL}/${editingSeat.id}`, {
+      } else if (modalType === "edit" && editingSeat) {
+        res = await fetch(`${SEAT_API_URL}/${editingSeat.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(seatData),
+          body: JSON.stringify(payload),
         });
-        const updatedSeat = await res.json();
+      }
+
+      if (!res) return;
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(
+          `Save failed ${res.status} ${res.statusText}: ${text}`,
+        );
+      }
+
+      const saved: Seat = await res.json();
+
+      if (modalType === "create") {
+        setSeats((prev) => [...prev, saved]);
+      } else if (modalType === "edit" && editingSeat) {
         setSeats((prev) =>
-          prev.map((s) => (s.id === editingSeat.id ? updatedSeat : s))
+          prev.map((s) => (s.id === editingSeat.id ? saved : s)),
         );
       }
     } catch (err) {
       console.error("Save failed:", err);
+      alert("Lưu seat lỗi, kiểm tra log backend.");
     } finally {
       setModalType(null);
       setEditingSeat(null);
@@ -70,21 +123,26 @@ export default function SeatsPage() {
   };
 
   // --- Delete seat ---
-  // 4. Thay đổi id từ 'number' sang 'string'
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this seat?")) return;
     try {
-      await fetch(`${apiURL}/${id}`, { method: "DELETE" });
+      const res = await fetch(`${SEAT_API_URL}/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(
+          `Delete failed ${res.status} ${res.statusText}: ${text}`,
+        );
+      }
       setSeats((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       console.error("Delete failed:", err);
+      alert("Xóa seat lỗi, kiểm tra log backend.");
     }
   };
 
   return (
     <AdminLayout>
       <div className="max-w-6xl mx-auto">
-        {/* 5. Cập nhật Header */}
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold tracking-tight text-emerald-300">
             💺 Seat Management
@@ -97,11 +155,9 @@ export default function SeatsPage() {
           </button>
         </header>
 
-        {/* 6. Giữ nguyên Style Bảng */}
         <div className="overflow-hidden rounded-xl shadow-lg bg-black/50 backdrop-blur-sm border border-emerald-600/40">
           <table className="w-full text-sm text-white/90">
             <thead className="bg-emerald-900/70 text-emerald-300 uppercase tracking-wide text-xs">
-              {/* 7. Cập nhật Cột Bảng */}
               <tr>
                 <th className="px-4 py-3 text-left">#</th>
                 <th className="px-4 py-3 text-left">Label</th>
@@ -115,7 +171,6 @@ export default function SeatsPage() {
             </thead>
 
             <tbody>
-              {/* 8. Cập nhật map data */}
               {seats.map((s, idx) => (
                 <tr
                   key={s.id}
@@ -127,7 +182,6 @@ export default function SeatsPage() {
                   <td className="px-4 py-3">{s.row}</td>
                   <td className="px-4 py-3">{s.col}</td>
                   <td className="px-4 py-3">{s.type}</td>
-                  {/* Cột 'Poster' được thay bằng 'Status' với style */}
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -140,11 +194,9 @@ export default function SeatsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right space-x-2">
-                    {/* Cập nhật hàm Edit/Delete */}
                     <button
                       onClick={() => {
                         setEditingSeat(s);
-// Cập nhật hàm Edit/Delete
                         setModalType("edit");
                       }}
                       className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors"
@@ -160,11 +212,21 @@ export default function SeatsPage() {
                   </td>
                 </tr>
               ))}
+
+              {seats.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="px-4 py-6 text-center text-slate-400"
+                  >
+                    No seats.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* 9. Cập nhật Popup (Modal) */}
         {modalType && (
           <SeatModel
             type={modalType}
